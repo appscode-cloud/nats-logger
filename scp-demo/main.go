@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/nats-io/nats.go"
+	"github.com/povsister/scp"
+	"github.com/tamalsaha/ssh-exec-demo/internal/util"
+	"golang.org/x/crypto/ssh"
+	passgen "gomodules.xyz/password-generator"
+	"gomodules.xyz/signals"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/povsister/scp"
-	"golang.org/x/crypto/ssh"
-	passgen "gomodules.xyz/password-generator"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -46,6 +48,9 @@ func main() {
 	if addr == "" {
 		panic(fmt.Errorf("failed to detect IP for Linode instance id: %s", ins.ID))
 	}
+
+	ctx := signals.SetupSignalContext()
+
 	if err := runSCP(addr, "/Users/tamal/.ssh/id_rsa", "root"); err != nil {
 		panic(err)
 	}
@@ -200,4 +205,48 @@ func (s *StringWriter) Write(b []byte) (int, error) {
 	klog.Infoln("$ ", string(b))
 	s.data = append(s.data, b...)
 	return len(b), nil
+}
+
+func consumer(ctx context.Context, subject string) error {
+	addr := "this-is-nats.appscode.ninja:4222"
+	nc, err := util.NewConnection(addr, "")
+	if err != nil {
+		return fmt.Errorf("could not connect to NATS: %s\n", err)
+	}
+
+	lines := make(chan *nats.Msg, 8*1024)
+
+	_, err = nc.ChanSubscribe(subject, lines)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		klog.Infof("Waiting for messages on subject %s @ %s", subject, nc.ConnectedUrl())
+
+		for {
+			select {
+			case m := <-lines:
+				err = handleLine(m)
+				if err != nil {
+					klog.Infof("Could not handle line %q: %s", string(m.Data), err)
+				}
+
+			case <-ctx.Done():
+				nc.Close()
+				close(lines)
+
+				return
+			}
+		}
+	}()
+
+	return nil
+}
+
+// handleLine handles an individual line by parsing its subject and saving to the
+// host specific log
+func handleLine(m *nats.Msg) (err error) {
+	_, err = fmt.Fprintln(os.Stdout, string(m.Data))
+	return err
 }

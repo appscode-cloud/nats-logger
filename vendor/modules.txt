@@ -98,6 +98,9 @@ gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.1.0
 ## explicit; go 1.15
 gomodules.xyz/pointer
+# gomodules.xyz/signals v0.2.0
+## explicit; go 1.15
+gomodules.xyz/signals
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine/internal
