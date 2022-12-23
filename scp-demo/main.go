@@ -107,11 +107,11 @@ func runSCP(addr, privateKey, username string) error {
 	}
 	defer scpClient.Close()
 
-	out, err := ExecuteTCPCommand(existingSSHClient, "ls -l", sshConf)
+	_, err = ExecuteTCPCommand(existingSSHClient, "ls -l", sshConf)
 	if err != nil {
 		return err
 	}
-	fmt.Println(out)
+	// fmt.Println(out)
 
 	//// Do the file transfer without timeout/context
 	//err = scpClient.CopyFileToRemote("/path/to/local/file", "/path/at/remote", &scp.FileTransferOption{})
