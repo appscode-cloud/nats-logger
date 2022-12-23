@@ -14,6 +14,7 @@ require (
 	golang.org/x/oauth2 v0.3.0
 	gomodules.xyz/password-generator v0.2.9
 	gomodules.xyz/pointer v0.1.0
+	gomodules.xyz/signals v0.2.0
 	k8s.io/apimachinery v0.26.0
 	k8s.io/klog/v2 v2.80.1
 )

@@ -191,6 +191,18 @@ func getStartupScriptID(c *linodego.Client) (int, error) {
 }
 
 func createInstance(c *linodego.Client, machineName string, scriptID int) (*linodego.Instance, error) {
+	var username, password string
+	if v, ok := os.LookupEnv("NATS_USERNAME"); ok {
+		username = v
+	} else {
+		username = os.Getenv("THIS_IS_NATS_USERNAME")
+	}
+	if v, ok := os.LookupEnv("NATS_PASSWORD"); ok {
+		password = v
+	} else {
+		password = os.Getenv("THIS_IS_NATS_PASSWORD")
+	}
+
 	sshKeys, err := c.ListSSHKeys(context.Background(), &linodego.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -209,7 +221,10 @@ func createInstance(c *linodego.Client, machineName string, scriptID int) (*lino
 		RootPass:       rootPassword,
 		AuthorizedKeys: authorizedKeys,
 		StackScriptData: map[string]string{
-			"my_var": machineName,
+			"my_var":          machineName,
+			"nats_username":   username,
+			"nats_password":   password,
+			"shipper_subject": "stackscript-log",
 		},
 		StackScriptID:  scriptID,
 		Image:          "linode/ubuntu22.04",
