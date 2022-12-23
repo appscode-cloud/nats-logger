@@ -4,9 +4,14 @@
 
 # set -x
 
+exec >/tmp/stackscript.log 2>&1
+
 MY_VAR=${1:-xyz}
 
-exec >/tmp/stackscript.log 2>&1
+SHIPPER_FILE=/tmp/stackscript.log \
+  SHIPPER_SUBJECT=stackscript-log \
+  go run producer/main.go &
+
 echo 'running demo script'
 echo ${MY_VAR}
 
