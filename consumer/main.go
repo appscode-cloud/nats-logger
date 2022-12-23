@@ -144,7 +144,8 @@ func handleLine(directory string, output string, m *nats.Msg) (err error) {
 }
 
 func consumer(ctx context.Context, wg *sync.WaitGroup, prefixSubject string, partition string, directory string, output string) error {
-	nc, err := util.NewConnection()
+	addr := "this-is-nats.appscode.ninja:4222"
+	nc, err := util.NewConnection(addr, "")
 	if err != nil {
 		return fmt.Errorf("could not connect to NATS: %s\n", err)
 	}
