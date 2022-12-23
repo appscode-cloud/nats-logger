@@ -2,18 +2,19 @@ package main
 
 import (
 	"context"
-	"github.com/povsister/scp"
 	"os"
 	"time"
+
+	"github.com/povsister/scp"
 )
 
 func main() {
-	if err := run(); err != nil {
+	if err := runSCP(); err != nil {
 		panic(err)
 	}
 }
 
-func run() error {
+func runSCP() error {
 	// Build a SSH config from username/password
 	// sshConf := scp.NewSSHConfigFromPassword("username", "password")
 
@@ -58,5 +59,3 @@ func run() error {
 
 	// scp: /root/success2.txt: No such file or directory
 }
-
-func 
