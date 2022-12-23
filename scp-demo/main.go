@@ -8,17 +8,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/povsister/scp"
+	"golang.org/x/crypto/ssh"
 	passgen "gomodules.xyz/password-generator"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+)
 
-	"github.com/povsister/scp"
+const (
+	maxRetries    int           = 100
+	backoffTimeMs time.Duration = 500
 )
 
 func main() {
 	c := NewClient()
 
-	machineName := "gh-runner-" + passgen.GenerateForCharset(6, passgen.AlphaNum)
+	machineName := "capi-" + passgen.GenerateForCharset(6, passgen.AlphaNum)
 	ins, err := createInstance(c, machineName, 1103682)
 	if err != nil {
 		panic(err)
@@ -72,12 +77,28 @@ func runSCP(addr, privateKey, username string) error {
 	// Dial SSH to "my.server.com:22".
 	// If your SSH server does not listen on 22, simply suffix the address with port.
 	// e.g: "my.server.com:1234"
-	scpClient, err := scp.NewClient(addr, sshConf, &scp.ClientOption{})
+
+	var existingSSHClient *ssh.Client
+	for i := 0; i < maxRetries; i++ {
+		existingSSHClient, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", addr), sshConf)
+		if err != nil {
+			time.Sleep(backoffTimeMs * time.Millisecond)
+		} else {
+			break
+		}
+	}
 	if err != nil {
 		return err
 	}
+
+	//scpClient, err := scp.NewClient(addr, sshConf, &scp.ClientOption{})
+	//if err != nil {
+	//	return err
+	//}
+	//
+
 	// Build a SCP client based on existing "golang.org/x/crypto/ssh.Client"
-	// scpClient, err := scp.NewClientFromExistingSSH(existingSSHClient, &scp.ClientOption{})
+	scpClient, err := scp.NewClientFromExistingSSH(existingSSHClient, &scp.ClientOption{})
 
 	defer scpClient.Close()
 
