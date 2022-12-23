@@ -24,6 +24,12 @@ const (
 )
 
 func main() {
+	ctx := signals.SetupSignalContext()
+	err := consumer(ctx, natsSubject)
+	if err != nil {
+		panic(err)
+	}
+
 	c := NewClient()
 
 	machineName := "capi-" + passgen.GenerateForCharset(6, passgen.AlphaNum)
@@ -48,13 +54,6 @@ func main() {
 	}
 	if addr == "" {
 		panic(fmt.Errorf("failed to detect IP for Linode instance id: %s", ins.ID))
-	}
-
-	ctx := signals.SetupSignalContext()
-
-	err = consumer(ctx, natsSubject)
-	if err != nil {
-		panic(err)
 	}
 
 	if err := runSCP(addr, "/Users/tamal/.ssh/id_rsa", "root"); err != nil {
