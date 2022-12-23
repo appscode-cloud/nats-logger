@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	maxRetries    int           = 1000
-	backoffTimeMs time.Duration = 500
+	maxRetries      int           = 1000
+	backoffTimeSecs time.Duration = 10
 )
 
 func main() {
@@ -83,7 +83,7 @@ func runSCP(addr, privateKey, username string) error {
 		existingSSHClient, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", addr), sshConf)
 		if err != nil {
 			fmt.Println("wait for ssh", i)
-			time.Sleep(backoffTimeMs * time.Millisecond)
+			time.Sleep(backoffTimeSecs * time.Second)
 		} else {
 			err = nil
 			fmt.Println("connected to ssh")
