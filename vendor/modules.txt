@@ -1,0 +1,59 @@
+# github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239
+## explicit
+# github.com/fsnotify/fsnotify v1.6.0
+## explicit; go 1.16
+# github.com/golang/protobuf v1.5.2
+## explicit; go 1.9
+# github.com/hpcloud/tail v1.0.0
+## explicit
+github.com/hpcloud/tail
+github.com/hpcloud/tail/ratelimiter
+github.com/hpcloud/tail/util
+github.com/hpcloud/tail/watch
+github.com/hpcloud/tail/winfile
+# github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869
+## explicit
+# github.com/jonboulle/clockwork v0.3.0
+## explicit; go 1.13
+# github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
+## explicit
+github.com/lestrrat-go/file-rotatelogs
+github.com/lestrrat-go/file-rotatelogs/internal/option
+# github.com/lestrrat-go/strftime v1.0.1
+## explicit; go 1.12
+github.com/lestrrat-go/strftime
+# github.com/nats-io/nats-server/v2 v2.9.10
+## explicit; go 1.19
+# github.com/nats-io/nats.go v1.22.1
+## explicit; go 1.16
+github.com/nats-io/nats.go
+github.com/nats-io/nats.go/encoders/builtin
+github.com/nats-io/nats.go/util
+# github.com/nats-io/nkeys v0.3.0
+## explicit; go 1.16
+github.com/nats-io/nkeys
+# github.com/nats-io/nuid v1.0.1
+## explicit
+github.com/nats-io/nuid
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/ripienaar/fshipper v0.0.0-20200402113012-543eed2da5a0
+## explicit; go 1.14
+github.com/ripienaar/fshipper/internal/util
+# github.com/tebeka/strftime v0.1.5
+## explicit; go 1.14
+# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+## explicit; go 1.17
+golang.org/x/crypto/ed25519
+# golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+## explicit; go 1.17
+golang.org/x/sys/unix
+# google.golang.org/protobuf v1.28.1
+## explicit; go 1.11
+# gopkg.in/fsnotify.v1 v1.4.7
+## explicit
+gopkg.in/fsnotify.v1
+# gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+## explicit
+gopkg.in/tomb.v1
