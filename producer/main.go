@@ -9,7 +9,7 @@ import (
 	"github.com/hpcloud/tail"
 	"github.com/nats-io/nats.go"
 
-	"github.com/ripienaar/fshipper/internal/util"
+	"github.com/tamalsaha/ssh-exec-demo/internal/util"
 )
 
 func publishFile(source string, subject string, nc *nats.Conn) error {

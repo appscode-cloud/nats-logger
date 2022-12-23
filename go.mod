@@ -6,7 +6,6 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/nats-io/nats.go v1.22.1
-	github.com/ripienaar/fshipper v0.0.0-20200402113012-543eed2da5a0
 )
 
 require (
