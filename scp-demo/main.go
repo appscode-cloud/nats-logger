@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	maxRetries    int           = 100
+	maxRetries    int           = 1000
 	backoffTimeMs time.Duration = 500
 )
 
@@ -30,7 +30,7 @@ func main() {
 	}
 	fmt.Println("instance id:", ins.ID)
 
-	data, err := json.MarshalIndent(ins, "", "  ")
+	data, err := json.MarshalIndent(ins.IPv4, "", "  ")
 	if err != nil {
 		panic(err)
 	}
@@ -82,8 +82,11 @@ func runSCP(addr, privateKey, username string) error {
 	for i := 0; i < maxRetries; i++ {
 		existingSSHClient, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", addr), sshConf)
 		if err != nil {
+			fmt.Println("wait for ssh", i)
 			time.Sleep(backoffTimeMs * time.Millisecond)
 		} else {
+			err = nil
+			fmt.Println("connected to ssh")
 			break
 		}
 	}
@@ -99,8 +102,16 @@ func runSCP(addr, privateKey, username string) error {
 
 	// Build a SCP client based on existing "golang.org/x/crypto/ssh.Client"
 	scpClient, err := scp.NewClientFromExistingSSH(existingSSHClient, &scp.ClientOption{})
-
+	if err != nil {
+		return err
+	}
 	defer scpClient.Close()
+
+	out, err := ExecuteTCPCommand(existingSSHClient, "ls -l", sshConf)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
 
 	//// Do the file transfer without timeout/context
 	//err = scpClient.CopyFileToRemote("/path/to/local/file", "/path/at/remote", &scp.FileTransferOption{})
@@ -139,6 +150,7 @@ func waitUntilScriptDone(scpClient *scp.Client) error {
 	}
 	return wait.PollImmediate(RetryInterval, RetryTimeout, func() (bool, error) {
 		attempt++
+		klog.Infoln("waiting for stacksript to finish", "attempt", attempt)
 
 		err := scpClient.CopyFileFromRemote("/root/success.txt", "/tmp/success.txt", fo)
 		if err != nil {
@@ -149,4 +161,43 @@ func waitUntilScriptDone(scpClient *scp.Client) error {
 		}
 		return true, nil
 	})
+}
+
+func ExecuteTCPCommand(conn *ssh.Client, command string, config *ssh.ClientConfig) (string, error) {
+	session, err := conn.NewSession()
+	if err != nil {
+		return "", err
+	}
+	session.Stdout = DefaultWriter
+	session.Stderr = DefaultWriter
+	session.Stdin = os.Stdin
+	if config.User != "root" {
+		command = fmt.Sprintf("sudo %s", command)
+	}
+	_ = session.Run(command)
+	output := DefaultWriter.Output()
+	_ = session.Close()
+	return output, nil
+}
+
+var DefaultWriter = &StringWriter{
+	data: make([]byte, 0),
+}
+
+type StringWriter struct {
+	data []byte
+}
+
+func (s *StringWriter) Flush() {
+	s.data = make([]byte, 0)
+}
+
+func (s *StringWriter) Output() string {
+	return string(s.data)
+}
+
+func (s *StringWriter) Write(b []byte) (int, error) {
+	klog.Infoln("$ ", string(b))
+	s.data = append(s.data, b...)
+	return len(b), nil
 }
