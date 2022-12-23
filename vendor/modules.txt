@@ -38,9 +38,6 @@ github.com/nats-io/nuid
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/ripienaar/fshipper v0.0.0-20200402113012-543eed2da5a0
-## explicit; go 1.14
-github.com/ripienaar/fshipper/internal/util
 # github.com/tebeka/strftime v0.1.5
 ## explicit; go 1.14
 # golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be

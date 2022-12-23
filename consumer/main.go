@@ -14,7 +14,7 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/nats-io/nats.go"
 
-	"github.com/ripienaar/fshipper/internal/util"
+	"github.com/tamalsaha/ssh-exec-demo/internal/util"
 )
 
 var mu = sync.Mutex{}
