@@ -12,7 +12,7 @@ nats -s this-is-nats.appscode.ninja --user=$THIS_IS_NATS_USERNAME --password=$TH
 ./script.sh
 ```
 
-## Step 2: Send Logs via NATS
+## Send Logs via NATS (used in stackscript)
 
 ```
 SHIPPER_FILE=/tmp/stackscript.log \
