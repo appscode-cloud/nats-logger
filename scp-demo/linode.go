@@ -20,6 +20,8 @@ import (
 const (
 	RetryInterval = 30 * time.Second
 	RetryTimeout  = 3 * time.Minute
+
+	natsSubject = "stackscript-log"
 )
 
 func stopRunner(e *github.WorkflowJobEvent) {
@@ -224,7 +226,7 @@ func createInstance(c *linodego.Client, machineName string, scriptID int) (*lino
 			"my_var":          machineName,
 			"nats_username":   username,
 			"nats_password":   password,
-			"shipper_subject": "stackscript-log",
+			"shipper_subject": natsSubject,
 		},
 		StackScriptID:  scriptID,
 		Image:          "linode/ubuntu22.04",
