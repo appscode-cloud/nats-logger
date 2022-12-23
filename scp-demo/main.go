@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	passgen "gomodules.xyz/password-generator"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 	"os"
 	"strings"
 	"time"
+
+	passgen "gomodules.xyz/password-generator"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 
 	"github.com/povsister/scp"
 )
