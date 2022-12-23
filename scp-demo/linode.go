@@ -57,7 +57,7 @@ func startRunner(e *github.WorkflowJobEvent) {
 	fmt.Println(machineName)
 
 	// machineName := "gh-runner-" + passgen.Generate(6)
-	id, err := createInstance(c, machineName, fmt.Sprintf("%s/%s", e.Org.GetLogin(), e.Repo.GetName()), 1018111)
+	id, err := createInstance(c, machineName, 1018111)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,7 @@ func main___() {
 	c := NewClient()
 
 	machineName := "gh-runner-" + passgen.Generate(6)
-	id, err := createInstance(c, machineName, "gh-walker", 1018111)
+	id, err := createInstance(c, machineName, 1018111)
 	if err != nil {
 		panic(err)
 	}
@@ -190,10 +190,10 @@ func getStartupScriptID(c *linodego.Client) (int, error) {
 	return scripts[0].ID, nil
 }
 
-func createInstance(c *linodego.Client, machineName, runnerOwner string, scriptID int) (int, error) {
+func createInstance(c *linodego.Client, machineName string, scriptID int) (*linodego.Instance, error) {
 	sshKeys, err := c.ListSSHKeys(context.Background(), &linodego.ListOptions{})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	authorizedKeys := make([]string, 0, len(sshKeys))
 	for _, r := range sshKeys {
@@ -205,16 +205,14 @@ func createInstance(c *linodego.Client, machineName, runnerOwner string, scriptI
 	createOpts := linodego.InstanceCreateOptions{
 		Label:          machineName,
 		Region:         "us-central",
-		Type:           "g6-standard-4", // "g6-nanode-1",
+		Type:           "g6-standard-1", // "g6-nanode-1",
 		RootPass:       rootPassword,
 		AuthorizedKeys: authorizedKeys,
 		StackScriptData: map[string]string{
-			"runner_cfg_pat": os.Getenv("GITHUB_TOKEN"),
-			"runner_owner":   runnerOwner,
-			"runner_name":    machineName,
+			"my_var": machineName,
 		},
 		StackScriptID:  scriptID,
-		Image:          "linode/ubuntu20.04",
+		Image:          "linode/ubuntu22.04",
 		BackupsEnabled: false,
 		PrivateIP:      true,
 		SwapSize:       pointer.IntP(0),
@@ -222,14 +220,14 @@ func createInstance(c *linodego.Client, machineName, runnerOwner string, scriptI
 
 	instance, err := c.CreateInstance(context.Background(), createOpts)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if err := waitForStatus(c, instance.ID, linodego.InstanceRunning); err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return instance.ID, nil
+	return instance, nil
 }
 
 func waitForStatus(c *linodego.Client, id int, status linodego.InstanceStatus) error {
