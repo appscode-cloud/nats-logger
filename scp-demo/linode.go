@@ -64,7 +64,7 @@ func startRunner(e *github.WorkflowJobEvent) {
 	fmt.Println("instance id:", id)
 }
 
-func main() {
+func main___() {
 	c := NewClient()
 
 	machineName := "gh-runner-" + passgen.Generate(6)
