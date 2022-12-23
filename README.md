@@ -4,6 +4,17 @@
 
 - https://gist.github.com/tamalsaha/8ad260a679bcd65d21d52fa709171af3
 
+## Full Demo
+
+(1) Starts a new server using a Stackscript
+(2) Stackscript logs to a file
+(3) Stackscript log is passed back to the user via nats
+(4) Stackscript status and log are copied via scp
+
+```
+> go run scp-demo/*.go
+```
+
 ## Step 1: Listen for Logs
 
 ```
