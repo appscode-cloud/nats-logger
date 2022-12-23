@@ -205,7 +205,7 @@ func createInstance(c *linodego.Client, machineName string, scriptID int) (*lino
 	createOpts := linodego.InstanceCreateOptions{
 		Label:          machineName,
 		Region:         "us-central",
-		Type:           "g6-standard-1", // "g6-nanode-1",
+		Type:           "g6-nanode-1", //  "g6-standard-1", // "g6-nanode-1",
 		RootPass:       rootPassword,
 		AuthorizedKeys: authorizedKeys,
 		StackScriptData: map[string]string{
