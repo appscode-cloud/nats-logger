@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/nats-io/nats.go"
 	"github.com/povsister/scp"
 	"github.com/tamalsaha/ssh-exec-demo/internal/util"
@@ -12,9 +16,6 @@ import (
 	"gomodules.xyz/signals"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
-	"os"
-	"strings"
-	"time"
 )
 
 const (
@@ -51,9 +52,16 @@ func main() {
 
 	ctx := signals.SetupSignalContext()
 
+	err = consumer(ctx, natsSubject)
+	if err != nil {
+		panic(err)
+	}
+
 	if err := runSCP(addr, "/Users/tamal/.ssh/id_rsa", "root"); err != nil {
 		panic(err)
 	}
+
+	<-ctx.Done()
 }
 
 func main_scp() {
