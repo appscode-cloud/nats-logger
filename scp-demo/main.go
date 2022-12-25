@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/povsister/scp"
 	"github.com/tamalsaha/ssh-exec-demo/internal/util"
 	"golang.org/x/crypto/ssh"
+	"gomodules.xyz/homedir"
 	passgen "gomodules.xyz/password-generator"
 	"gomodules.xyz/signals"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -56,7 +58,7 @@ func main() {
 		panic(fmt.Errorf("failed to detect IP for Linode instance id: %s", ins.ID))
 	}
 
-	if err := runSCP(addr, "/Users/tamal/.ssh/id_rsa", "root"); err != nil {
+	if err := runSCP(addr, filepath.Join(homedir.HomeDir(), ".ssh/id_rsa"), "root"); err != nil {
 		panic(err)
 	}
 
@@ -64,7 +66,7 @@ func main() {
 }
 
 func main_scp() {
-	if err := runSCP("139.144.38.197", "/Users/tamal/.ssh/id_rsa", "root"); err != nil {
+	if err := runSCP("139.144.38.197", filepath.Join(homedir.HomeDir(), ".ssh/id_rsa"), "root"); err != nil {
 		panic(err)
 	}
 }
