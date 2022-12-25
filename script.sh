@@ -2,9 +2,15 @@
 
 # <UDF name="my_var" label="My Variable" />
 
-# set -x
+set -xeou pipefail
 
 exec >/tmp/stackscript.log 2>&1
+
+# http://redsymbol.net/articles/bash-exit-traps/
+function finish {
+    echo $? > /root/result.txt
+}
+trap finish EXIT
 
 MY_VAR=${1:-xyz}
 

@@ -166,7 +166,7 @@ func waitUntilScriptDone(scpClient *scp.Client) error {
 		attempt++
 		klog.Infoln("waiting for stacksript to finish", "attempt", attempt)
 
-		err := scpClient.CopyFileFromRemote("/root/success.txt", "/tmp/success.txt", fo)
+		err := scpClient.CopyFileFromRemote("/root/result.txt", "/tmp/result.txt", fo)
 		if err != nil {
 			if strings.Contains(err.Error(), "No such file or directory") {
 				return false, nil
