@@ -9,11 +9,15 @@ set -xeou pipefail
 
 exec >/root/stackscript.log 2>&1
 
+# http://redsymbol.net/articles/bash-exit-traps/
+function finish {
+    echo $? > /root/result.txt
+}
+trap finish EXIT
+
 curl -fsSLO https://github.com/tamalsaha/ssh-exec-demo/raw/master/producer/producer
 chmod +x ./producer
 SHIPPER_FILE=/root/stackscript.log ./producer &
 
 echo 'running demo script'
 echo ${MY_VAR}
-
-touch /root/success.txt

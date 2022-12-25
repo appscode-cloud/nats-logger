@@ -19,7 +19,7 @@ import (
 
 const (
 	RetryInterval = 30 * time.Second
-	RetryTimeout  = 3 * time.Minute
+	RetryTimeout  = 10 * time.Minute
 
 	natsSubject = "stackscript-log"
 )
