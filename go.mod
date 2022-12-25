@@ -12,6 +12,7 @@ require (
 	github.com/povsister/scp v0.0.0-20210427074412-33febfd9f13e
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 	golang.org/x/oauth2 v0.3.0
+	gomodules.xyz/homedir v0.1.0
 	gomodules.xyz/password-generator v0.2.9
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/signals v0.2.0
