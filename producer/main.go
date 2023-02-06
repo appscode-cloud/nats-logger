@@ -37,13 +37,24 @@ func main() {
 		log.Fatalf("Please set a NATS subject to publish to using SHIPPER_SUBJECT\n")
 	}
 
+	addr := os.Getenv("NATS_SERVER")
+	creds := os.Getenv("NATS_CREDS")
+	credFile, err := os.CreateTemp("", "nats-*.creds")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	_, err = credFile.Write([]byte(creds))
+	if err != nil {
+		log.Fatalf("Could not write creds: %s\n", err)
+	}
+	defer os.Remove(credFile.Name())
 	//partition, name, err := util.Partition()
 	//if err != nil {
 	//	log.Fatal(err.Error())
 	//}
 
-	addr := "this-is-nats.appscode.ninja:4222"
-	nc, err := util.NewConnection(addr, "")
+	//addr := "this-is-nats.appscode.ninja:4222"
+	nc, err := util.NewConnection(addr, credFile.Name())
 	if err != nil {
 		log.Fatalf("Could not connect to NATS: %s\n", err)
 	}
