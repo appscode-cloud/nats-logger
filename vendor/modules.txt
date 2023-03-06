@@ -59,6 +59,9 @@ github.com/pkg/errors
 # github.com/povsister/scp v0.0.0-20210427074412-33febfd9f13e
 ## explicit; go 1.15
 github.com/povsister/scp
+# github.com/rs/xid v1.4.0
+## explicit; go 1.12
+github.com/rs/xid
 # github.com/tebeka/strftime v0.1.5
 ## explicit; go 1.14
 # golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
