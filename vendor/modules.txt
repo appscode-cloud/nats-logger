@@ -1,5 +1,3 @@
-# github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239
-## explicit
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 # github.com/go-logr/logr v1.2.3
@@ -24,26 +22,25 @@ github.com/hpcloud/tail/ratelimiter
 github.com/hpcloud/tail/util
 github.com/hpcloud/tail/watch
 github.com/hpcloud/tail/winfile
-# github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869
-## explicit
 # github.com/jonboulle/clockwork v0.3.0
 ## explicit; go 1.13
 # github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 ## explicit
 github.com/lestrrat-go/file-rotatelogs
 github.com/lestrrat-go/file-rotatelogs/internal/option
-# github.com/lestrrat-go/strftime v1.0.1
-## explicit; go 1.12
+# github.com/lestrrat-go/strftime v1.0.6
+## explicit; go 1.13
 github.com/lestrrat-go/strftime
-# github.com/linode/linodego v1.10.0
+github.com/lestrrat-go/strftime/internal/errors
+# github.com/linode/linodego v1.14.1
 ## explicit; go 1.18
 github.com/linode/linodego
 github.com/linode/linodego/internal/duration
 github.com/linode/linodego/internal/parseabletime
-# github.com/nats-io/nats-server/v2 v2.9.10
+# github.com/nats-io/nats-server/v2 v2.9.15
 ## explicit; go 1.19
-# github.com/nats-io/nats.go v1.22.1
-## explicit; go 1.16
+# github.com/nats-io/nats.go v1.24.0
+## explicit; go 1.19
 github.com/nats-io/nats.go
 github.com/nats-io/nats.go/encoders/builtin
 github.com/nats-io/nats.go/util
@@ -62,9 +59,7 @@ github.com/povsister/scp
 # github.com/rs/xid v1.4.0
 ## explicit; go 1.12
 github.com/rs/xid
-# github.com/tebeka/strftime v0.1.5
-## explicit; go 1.14
-# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+# golang.org/x/crypto v0.7.0
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
@@ -82,19 +77,28 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10
+# golang.org/x/net v0.8.0
 ## explicit; go 1.17
 golang.org/x/net/context
-golang.org/x/net/context/ctxhttp
+golang.org/x/net/http/httpguts
+golang.org/x/net/http2
+golang.org/x/net/http2/hpack
+golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/oauth2 v0.3.0
+# golang.org/x/oauth2 v0.6.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.3.0
+# golang.org/x/sys v0.6.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
+# golang.org/x/text v0.8.0
+## explicit; go 1.17
+golang.org/x/text/secure/bidirule
+golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
 # gomodules.xyz/homedir v0.1.0
 ## explicit; go 1.15
 gomodules.xyz/homedir
@@ -154,7 +158,7 @@ gopkg.in/ini.v1
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 ## explicit
 gopkg.in/tomb.v1
-# k8s.io/apimachinery v0.26.0
+# k8s.io/apimachinery v0.25.3
 ## explicit; go 1.19
 k8s.io/apimachinery/pkg/util/runtime
 k8s.io/apimachinery/pkg/util/wait
@@ -166,6 +170,6 @@ k8s.io/klog/v2/internal/clock
 k8s.io/klog/v2/internal/dbg
 k8s.io/klog/v2/internal/serialize
 k8s.io/klog/v2/internal/severity
-# k8s.io/utils v0.0.0-20221107191617-1a15be271d1d
-## explicit; go 1.18
+# k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
+## explicit; go 1.12
 k8s.io/utils/clock

@@ -19,6 +19,7 @@ type Region struct {
 	Capabilities []string        `json:"capabilities"`
 	Status       string          `json:"status"`
 	Resolvers    RegionResolvers `json:"resolvers"`
+	Label        string          `json:"label"`
 }
 
 // RegionResolvers contains the DNS resolvers of a region
@@ -52,20 +53,21 @@ func (resp *RegionsPagedResponse) castResult(r *resty.Request, e string) (int, i
 func (c *Client) ListRegions(ctx context.Context, opts *ListOptions) ([]Region, error) {
 	response := RegionsPagedResponse{}
 
-	if result, err := c.getCachedResponse(response.endpoint()); err != nil {
-		return nil, err
-	} else if result != nil {
-		return result.([]Region), nil
-	}
-
-	err := c.listHelper(ctx, &response, opts)
+	endpoint, err := generateListCacheURL(response.endpoint(), opts)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := c.addCachedResponse(response.endpoint(), response.Data, &cacheExpiryTime); err != nil {
+	if result := c.getCachedResponse(endpoint); result != nil {
+		return result.([]Region), nil
+	}
+
+	err = c.listHelper(ctx, &response, opts)
+	if err != nil {
 		return nil, err
 	}
+
+	c.addCachedResponse(endpoint, response.Data, &cacheExpiryTime)
 
 	return response.Data, nil
 }
@@ -74,9 +76,7 @@ func (c *Client) ListRegions(ctx context.Context, opts *ListOptions) ([]Region, 
 func (c *Client) GetRegion(ctx context.Context, regionID string) (*Region, error) {
 	e := fmt.Sprintf("regions/%s", regionID)
 
-	if result, err := c.getCachedResponse(e); err != nil {
-		return nil, err
-	} else if result != nil {
+	if result := c.getCachedResponse(e); result != nil {
 		result := result.(Region)
 		return &result, nil
 	}
@@ -87,9 +87,7 @@ func (c *Client) GetRegion(ctx context.Context, regionID string) (*Region, error
 		return nil, err
 	}
 
-	if err := c.addCachedResponse(e, r.Result(), &cacheExpiryTime); err != nil {
-		return nil, err
-	}
+	c.addCachedResponse(e, r.Result(), &cacheExpiryTime)
 
 	return r.Result().(*Region), nil
 }

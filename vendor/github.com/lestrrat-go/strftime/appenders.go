@@ -22,17 +22,17 @@ var (
 	dayOfMonthZeroPad           = StdlibFormat("02")
 	dayOfMonthSpacePad          = StdlibFormat("_2")
 	ymd                         = StdlibFormat("2006-01-02")
-	twentyFourHourClockZeroPad  = StdlibFormat("15")
-	twelveHourClockZeroPad      = StdlibFormat("3")
+	twentyFourHourClockZeroPad  = &hourPadded{twelveHour: false, pad: '0'}
+	twelveHourClockZeroPad      = &hourPadded{twelveHour: true, pad: '0'}
 	dayOfYear                   = AppendFunc(appendDayOfYear)
-	twentyFourHourClockSpacePad = hourwblank(false)
-	twelveHourClockSpacePad     = hourwblank(true)
+	twentyFourHourClockSpacePad = &hourPadded{twelveHour: false, pad: ' '}
+	twelveHourClockSpacePad     = &hourPadded{twelveHour: true, pad: ' '}
 	minutesZeroPad              = StdlibFormat("04")
 	monthNumberZeroPad          = StdlibFormat("01")
 	newline                     = Verbatim("\n")
 	ampm                        = StdlibFormat("PM")
 	hm                          = StdlibFormat("15:04")
-	imsp                        = StdlibFormat("3:04:05 PM")
+	imsp                        = hmsWAMPM{}
 	secondsNumberZeroPad        = StdlibFormat("05")
 	hms                         = StdlibFormat("15:04:05")
 	tab                         = Verbatim("\t")
@@ -92,7 +92,9 @@ func (l appenderList) dump(out io.Writer) {
 			fmt.Fprintf(&buf, ",\n")
 		}
 	}
-	buf.WriteTo(out)
+	if _, err := buf.WriteTo(out); err != nil {
+		panic(err)
+	}
 }
 
 // does the time.Format thing
@@ -279,15 +281,68 @@ func appendDayOfYear(b []byte, t time.Time) []byte {
 	return append(b, strconv.Itoa(n)...)
 }
 
-type hourwblank bool
+type hourPadded struct {
+	pad        byte
+	twelveHour bool
+}
 
-func (v hourwblank) Append(b []byte, t time.Time) []byte {
+func (v hourPadded) Append(b []byte, t time.Time) []byte {
 	h := t.Hour()
-	if bool(v) && h > 12 {
+	if v.twelveHour && h > 12 {
 		h = h - 12
 	}
-	if h < 10 {
-		b = append(b, ' ')
+	if v.twelveHour && h == 0 {
+		h = 12
 	}
-	return append(b, strconv.Itoa(h)...)
+
+	if h < 10 {
+		b = append(b, v.pad)
+		b = append(b, byte(h+48))
+	} else {
+		b = unrollTwoDigits(b, h)
+	}
+	return b
+}
+
+func unrollTwoDigits(b []byte, v int) []byte {
+	b = append(b, byte((v/10)+48))
+	b = append(b, byte((v%10)+48))
+	return b
+}
+
+type hmsWAMPM struct{}
+
+func (v hmsWAMPM) Append(b []byte, t time.Time) []byte {
+	h := t.Hour()
+	var am bool
+
+	if h == 0 {
+		b = append(b, '1')
+		b = append(b, '2')
+		am = true
+	} else {
+		switch {
+		case h == 12:
+			// no op
+		case h > 12:
+			h = h - 12
+		default:
+			am = true
+		}
+		b = unrollTwoDigits(b, h)
+	}
+	b = append(b, ':')
+	b = unrollTwoDigits(b, t.Minute())
+	b = append(b, ':')
+	b = unrollTwoDigits(b, t.Second())
+
+	b = append(b, ' ')
+	if am {
+		b = append(b, 'A')
+	} else {
+		b = append(b, 'P')
+	}
+	b = append(b, 'M')
+
+	return b
 }

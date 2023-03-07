@@ -32,7 +32,7 @@ nats -s this-is-nats.appscode.ninja --user=$THIS_IS_NATS_USERNAME --password=$TH
 ```
 SHIPPER_FILE=/tmp/stackscript.log \
   SHIPPER_SUBJECT=stackscript-log \
-  go run producer/main.go
+  go run nats-logger/main.go
 ```
 
 ## NATS example

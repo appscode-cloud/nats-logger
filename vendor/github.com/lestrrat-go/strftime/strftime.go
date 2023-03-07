@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/lestrrat-go/strftime/internal/errors"
 )
 
 type compileHandler interface {
@@ -71,7 +71,7 @@ func compile(handler compileHandler, p string, ds SpecificationSet) error {
 	return nil
 }
 
-func getSpecificationSetFor(options ...Option) SpecificationSet {
+func getSpecificationSetFor(options ...Option) (SpecificationSet, error) {
 	var ds SpecificationSet = defaultSpecificationSet
 	var extraSpecifications []*optSpecificationPair
 	for _, option := range options {
@@ -90,10 +90,12 @@ func getSpecificationSetFor(options ...Option) SpecificationSet {
 			ds = NewSpecificationSet()
 		}
 		for _, v := range extraSpecifications {
-			ds.Set(v.name, v.appender)
+			if err := ds.Set(v.name, v.appender); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return ds
+	return ds, nil
 }
 
 var fmtAppendExecutorPool = sync.Pool{
@@ -123,7 +125,10 @@ func releasdeFmtAppendExecutor(v *appenderExecutor) {
 // and reusing it.
 func Format(p string, t time.Time, options ...Option) (string, error) {
 	// TODO: this may be premature optimization
-	ds := getSpecificationSetFor(options...)
+	ds, err := getSpecificationSetFor(options...)
+	if err != nil {
+		return "", errors.Wrap(err, `failed to get specification set`)
+	}
 	h := getFmtAppendExecutor()
 	defer releasdeFmtAppendExecutor(h)
 
@@ -145,7 +150,10 @@ type Strftime struct {
 // an error is returned in the second argument.
 func New(p string, options ...Option) (*Strftime, error) {
 	// TODO: this may be premature optimization
-	ds := getSpecificationSetFor(options...)
+	ds, err := getSpecificationSetFor(options...)
+	if err != nil {
+		return nil, errors.Wrap(err, `failed to get specification set`)
+	}
 
 	var h appenderListBuilder
 	h.list = &combiningAppend{}
@@ -181,6 +189,13 @@ func (f *Strftime) Format(dst io.Writer, t time.Time) error {
 		return err
 	}
 	return nil
+}
+
+// FormatBuffer is equivalent to Format, but appends the result directly to
+// supplied slice dst, returning the updated slice. This avoids any internal
+// memory allocation.
+func (f *Strftime) FormatBuffer(dst []byte, t time.Time) []byte {
+	return f.format(dst, t)
 }
 
 // Dump outputs the internal structure of the formatter, for debugging purposes.
