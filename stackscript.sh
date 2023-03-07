@@ -33,8 +33,11 @@ trap finish EXIT
 
 pwd
 
-curl -fsSLO https://go.bytebuilders.dev/nats-logger/raw/master/nats-logger/nats-logger
-chmod +x ./nats-logger
+curl -fsSLO https://github.com/bytebuilders/nats-logger/releases/download/v0.0.1/nats-logger-linux-amd64.tar.gz
+tar -xzvf nats-logger-linux-amd64.tar.gz
+chmod +x nats-logger-linux-amd64
+mv nats-logger-linux-amd64 nats-logger
+
 SHIPPER_FILE=/root/stackscript.log ./nats-logger &
 
 echo 'running demo script'
