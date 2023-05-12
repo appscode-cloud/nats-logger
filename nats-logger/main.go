@@ -17,15 +17,20 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/hpcloud/tail"
 	"github.com/nats-io/nats.go"
+	"github.com/pkg/errors"
 	"github.com/rs/xid"
 	"go.bytebuilders.dev/nats-logger/internal/util"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 )
 
@@ -65,7 +70,7 @@ func main() {
 	id := xid.New().String()
 	title, ok := os.LookupEnv("SHIPPER_TITLE")
 	if !ok {
-		title = "Create Linode Instance"
+		title = "Cluster Provisioning Logs"
 	}
 
 	msg := newResponse(TaskStatusStarted, id, title, "Creating Linode Instance")
@@ -73,18 +78,62 @@ func main() {
 		log.Printf("Could not publish response")
 	}
 
-	for {
-		// fmt.Sprintf("%s.p%d.%s", subject, partition, name)
-		err = publishFile(source, subject, nc, id, title)
-		if err != nil {
-			log.Printf("Could not publish file: %s", err)
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-		time.Sleep(500 * time.Millisecond)
+	go publishClusterProvisioningLogs(ctx, source, subject, id, nc)
+
+	if err = waitForTaskCompletion(); err != nil {
+		msg = newResponse(TaskStatusFailed, id, "", err.Error())
+	} else {
+		msg = newResponse(TaskStatusSuccess, id, "", "Cluster provision completed successfully")
+	}
+
+	if err = nc.Publish(subject, msg); err != nil {
+		log.Printf("Could not publish response")
 	}
 }
 
-func publishFile(source string, subject string, nc *nats.Conn, id, title string) error {
+func publishClusterProvisioningLogs(ctx context.Context, source, subject, id string, nc *nats.Conn) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if err := publishFile(source, subject, id, nc); err != nil {
+				log.Printf("Could not publish file: %s", err)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+}
+
+func waitForTaskCompletion() error {
+	retryInterval, retryTimeout := 30*time.Second, 1*time.Hour
+	return wait.PollImmediate(retryInterval, retryTimeout, func() (bool, error) {
+		data, err := os.ReadFile("/root/result.txt")
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return false, errors.Wrapf(err, "Could not read file")
+			}
+			return false, nil
+		}
+
+		exitCode, err := strconv.Atoi(string(data))
+		if err != nil {
+			return false, err
+		}
+
+		if exitCode != 0 {
+			return false, errors.New(fmt.Sprintf("Cluster provision exited with return code: %v", exitCode))
+		}
+
+		return true, nil
+	})
+}
+
+func publishFile(source, subject, id string, nc *nats.Conn) error {
 	t, err := tail.TailFile(source, tail.Config{Follow: true})
 	if err != nil {
 		return err
@@ -93,7 +142,7 @@ func publishFile(source string, subject string, nc *nats.Conn, id, title string)
 	log.Printf("Publishing lines from %s to %s", source, subject)
 
 	for line := range t.Lines {
-		msg := newResponse(TaskStatusRunning, id, title, line.Text)
+		msg := newResponse(TaskStatusRunning, id, "", line.Text)
 		if err := nc.Publish(subject, msg); err != nil {
 			klog.ErrorS(err, "failed to publish log")
 		}
