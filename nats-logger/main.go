@@ -19,18 +19,14 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"time"
+	"strings"
 
 	"github.com/hpcloud/tail"
 	"github.com/nats-io/nats.go"
-	"github.com/pkg/errors"
 	"github.com/rs/xid"
 	"go.bytebuilders.dev/nats-logger/internal/util"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 )
 
@@ -78,62 +74,27 @@ func main() {
 		log.Printf("Could not publish response")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-
-	go publishClusterProvisioningLogs(ctx, source, subject, id, nc)
-
-	if err = waitForTaskCompletion(); err != nil {
-		msg = newResponse(TaskStatusFailed, id, "", err.Error())
-	} else {
-		msg = newResponse(TaskStatusSuccess, id, "", "Cluster provision completed successfully")
-	}
-
-	if err = nc.Publish(subject, msg); err != nil {
-		log.Printf("Could not publish response")
-	}
+	publishClusterProvisioningLogs(source, subject, id, nc)
 }
 
-func publishClusterProvisioningLogs(ctx context.Context, source, subject, id string, nc *nats.Conn) {
+func publishClusterProvisioningLogs(source, subject, id string, nc *nats.Conn) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			if err := publishFile(source, subject, id, nc); err != nil {
+			if err := publishFile(source, subject, id, nc, cancel); err != nil {
 				log.Printf("Could not publish file: %s", err)
 			}
 
-			time.Sleep(500 * time.Millisecond)
+			// time.Sleep(500 * time.Millisecond)
 		}
 	}
 }
 
-func waitForTaskCompletion() error {
-	retryInterval, retryTimeout := 30*time.Second, 1*time.Hour
-	return wait.PollImmediate(retryInterval, retryTimeout, func() (bool, error) {
-		data, err := os.ReadFile("/root/result.txt")
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return false, errors.Wrapf(err, "Could not read file")
-			}
-			return false, nil
-		}
-
-		exitCode, err := strconv.Atoi(string(data))
-		if err != nil {
-			return false, err
-		}
-
-		if exitCode != 0 {
-			return false, errors.New(fmt.Sprintf("Cluster provision exited with return code: %v", exitCode))
-		}
-
-		return true, nil
-	})
-}
-
-func publishFile(source, subject, id string, nc *nats.Conn) error {
+func publishFile(source, subject, id string, nc *nats.Conn, cancel context.CancelFunc) error {
 	t, err := tail.TailFile(source, tail.Config{Follow: true})
 	if err != nil {
 		return err
@@ -142,13 +103,28 @@ func publishFile(source, subject, id string, nc *nats.Conn) error {
 	log.Printf("Publishing lines from %s to %s", source, subject)
 
 	for line := range t.Lines {
-		msg := newResponse(TaskStatusRunning, id, "", line.Text)
+		status := generateTaskStatus(line.Text)
+		msg := newResponse(status, id, "", line.Text)
 		if err := nc.Publish(subject, msg); err != nil {
 			klog.ErrorS(err, "failed to publish log")
+		}
+
+		if status != TaskStatusRunning {
+			cancel()
 		}
 	}
 
 	return nil
+}
+
+func generateTaskStatus(msg string) TaskStatus {
+	if strings.Contains(msg, "Cluster provision: Task failed !") {
+		return TaskStatusFailed
+	} else if strings.Contains(msg, "Cluster provision: Task completed successfully !") {
+		return TaskStatusSuccess
+	}
+
+	return TaskStatusRunning
 }
 
 type TaskStatus string
