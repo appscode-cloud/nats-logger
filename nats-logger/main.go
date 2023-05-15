@@ -111,6 +111,7 @@ func publishFile(source, subject, id string, nc *nats.Conn, cancel context.Cance
 
 		if status != TaskStatusRunning {
 			cancel()
+			return nil
 		}
 	}
 
