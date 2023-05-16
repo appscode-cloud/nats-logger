@@ -17,11 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/hpcloud/tail"
 	"github.com/nats-io/nats.go"
@@ -78,23 +78,16 @@ func main() {
 }
 
 func publishClusterProvisioningLogs(source, subject, id string, nc *nats.Conn) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if err := publishFile(source, subject, id, nc, cancel); err != nil {
-				log.Printf("Could not publish file: %s", err)
-			}
-
-			// time.Sleep(500 * time.Millisecond)
+		if err := publishFile(source, subject, id, nc); err != nil {
+			log.Printf("Could not publish file: %s", err)
 		}
+
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
-func publishFile(source, subject, id string, nc *nats.Conn, cancel context.CancelFunc) error {
+func publishFile(source, subject, id string, nc *nats.Conn) error {
 	t, err := tail.TailFile(source, tail.Config{Follow: true})
 	if err != nil {
 		return err
@@ -110,10 +103,6 @@ func publishFile(source, subject, id string, nc *nats.Conn, cancel context.Cance
 		msg := newResponse(status, id, "", line.Text)
 		if err = nc.Publish(subject, msg); err != nil {
 			klog.ErrorS(err, "failed to publish log")
-		}
-
-		if status != TaskStatusRunning {
-			cancel()
 		}
 	}
 
