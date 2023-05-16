@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/hpcloud/tail"
 	"github.com/nats-io/nats.go"
@@ -103,8 +102,11 @@ func publishFile(source, subject, id string, nc *nats.Conn, cancel context.Cance
 
 	log.Printf("Publishing lines from %s to %s", source, subject)
 
+	status := TaskStatus(TaskStatusRunning)
 	for line := range t.Lines {
-		status := generateTaskStatus(line.Text)
+		if status == TaskStatusRunning {
+			status = generateTaskStatus(line.Text)
+		}
 		msg := newResponse(status, id, "", line.Text)
 		if err = nc.Publish(subject, msg); err != nil {
 			klog.ErrorS(err, "failed to publish log")
@@ -112,8 +114,6 @@ func publishFile(source, subject, id string, nc *nats.Conn, cancel context.Cance
 
 		if status != TaskStatusRunning {
 			cancel()
-			time.Sleep(2 * time.Second)
-			return nil
 		}
 	}
 
