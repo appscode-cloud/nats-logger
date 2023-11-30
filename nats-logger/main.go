@@ -66,10 +66,10 @@ func main() {
 	id := xid.New().String()
 	title, ok := os.LookupEnv("SHIPPER_TITLE")
 	if !ok {
-		title = "Cluster Provisioning Logs"
+		title = "Cluster Operation Logs"
 	}
 
-	msg := newResponse(TaskStatusStarted, id, title, "Creating Linode Instance")
+	msg := newResponse(TaskStatusStarted, id, title, "Creating VM Instance")
 	if err = nc.Publish(subject, msg); err != nil {
 		log.Printf("Could not publish response")
 	}
