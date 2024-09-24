@@ -69,7 +69,7 @@ func main() {
 		title = "Cluster Operation Logs"
 	}
 
-	msg := newResponse(TaskStatusStarted, id, title, "Creating VM Instance")
+	msg := newResponse(TaskStatusStarted, id, title, "Running Cluster Operation")
 	if err = nc.Publish(subject, msg); err != nil {
 		log.Printf("Could not publish response")
 	}
