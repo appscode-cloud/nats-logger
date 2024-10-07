@@ -30,6 +30,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
+var natsSuccessMessage, natsFailureMessage string
+
 func main() {
 	source := os.Getenv("SHIPPER_FILE")
 	if source == "" {
@@ -52,12 +54,7 @@ func main() {
 		log.Fatalf("Could not write creds: %s\n", err)
 	}
 	defer os.Remove(credFile.Name())
-	//partition, name, err := util.Partition()
-	//if err != nil {
-	//	log.Fatal(err.Error())
-	//}
 
-	// addr := "this-is-nats.appscode.ninja:4222"
 	nc, err := util.NewConnection(addr, credFile.Name())
 	if err != nil {
 		log.Fatalf("Could not connect to NATS: %s\n", err)
@@ -69,7 +66,16 @@ func main() {
 		title = "Cluster Operation Logs"
 	}
 
-	msg := newResponse(TaskStatusStarted, id, title, "Creating VM Instance")
+	natsSuccessMessage, ok = os.LookupEnv("NATS_SUCCESS_MESSAGE")
+	if !ok {
+		natsSuccessMessage = "Task Completed Successfully"
+	}
+	natsFailureMessage, ok = os.LookupEnv("NATS_FAILURE_MESSAGE")
+	if !ok {
+		natsFailureMessage = "Task Failed"
+	}
+
+	msg := newResponse(TaskStatusStarted, id, title, "Starting Cluster Operation...")
 	if err = nc.Publish(subject, msg); err != nil {
 		log.Printf("Could not publish response")
 	}
@@ -110,12 +116,11 @@ func publishFile(source, subject, id string, nc *nats.Conn) error {
 }
 
 func generateTaskStatus(msg string) TaskStatus {
-	if strings.Contains(msg, "Cluster provision: Task failed !") {
+	if strings.Contains(msg, natsFailureMessage) {
 		return TaskStatusFailed
-	} else if strings.Contains(msg, "Cluster provision: Task completed successfully !") {
+	} else if strings.Contains(msg, natsSuccessMessage) {
 		return TaskStatusSuccess
 	}
-
 	return TaskStatusRunning
 }
 
