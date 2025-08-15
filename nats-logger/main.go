@@ -47,13 +47,13 @@ func main() {
 	creds := os.Getenv("NATS_CREDS")
 	credFile, err := os.CreateTemp("", "nats-*.creds")
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 	_, err = credFile.Write([]byte(creds))
 	if err != nil {
 		log.Fatalf("Could not write creds: %s\n", err)
 	}
-	defer os.Remove(credFile.Name())
+	defer os.Remove(credFile.Name()) //nolint:errcheck
 
 	nc, err := util.NewConnection(addr, credFile.Name())
 	if err != nil {
