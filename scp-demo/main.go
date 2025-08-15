@@ -38,8 +38,8 @@ import (
 )
 
 const (
-	maxRetries      int           = 1000
-	backoffTimeSecs time.Duration = 10
+	maxRetries  int           = 1000
+	backoffTime time.Duration = 10 * time.Second
 )
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 
 	var addr string
 	for _, ip := range ins.IPv4 {
-		if !(ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsLoopback()) {
+		if !ip.IsPrivate() && !ip.IsLinkLocalUnicast() && !ip.IsLinkLocalMulticast() && !ip.IsLoopback() {
 			addr = ip.String()
 			break
 		}
@@ -114,7 +114,7 @@ func runSCP(addr, privateKey, username string) error {
 		existingSSHClient, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", addr), sshConf)
 		if err != nil {
 			fmt.Println("wait for ssh", i)
-			time.Sleep(backoffTimeSecs * time.Second)
+			time.Sleep(backoffTime)
 		} else {
 			err = nil
 			fmt.Println("connected to ssh")
@@ -136,7 +136,7 @@ func runSCP(addr, privateKey, username string) error {
 	if err != nil {
 		return err
 	}
-	defer scpClient.Close()
+	defer scpClient.Close() //nolint:errcheck
 
 	_, err = ExecuteTCPCommand(existingSSHClient, "ls -l", sshConf)
 	if err != nil {
@@ -237,7 +237,7 @@ func consumer(ctx context.Context, subject string) error {
 	addr := "this-is-nats.appscode.ninja:4222"
 	nc, err := util.NewConnection(addr, "")
 	if err != nil {
-		return fmt.Errorf("could not connect to NATS: %s\n", err)
+		return fmt.Errorf("could not connect to NATS: %w", err)
 	}
 
 	lines := make(chan *nats.Msg, 8*1024)

@@ -81,7 +81,7 @@ func main() {
 
 			// we're the only routine now, no need to lock
 			for _, logr := range logs {
-				logr.Close()
+				_ = logr.Close()
 			}
 
 			return
@@ -164,7 +164,7 @@ func consumer(ctx context.Context, wg *sync.WaitGroup, prefixSubject string, par
 	addr := "this-is-nats.appscode.ninja:4222"
 	nc, err := util.NewConnection(addr, "")
 	if err != nil {
-		return fmt.Errorf("could not connect to NATS: %s\n", err)
+		return fmt.Errorf("could not connect to NATS: %w", err)
 	}
 
 	lines := make(chan *nats.Msg, 8*1024)
