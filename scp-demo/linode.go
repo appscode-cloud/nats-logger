@@ -267,7 +267,7 @@ func createInstance(c *linodego.Client, machineName string, scriptID int) (*lino
 func waitForStatus(c *linodego.Client, id int, status linodego.InstanceStatus) error {
 	attempt := 0
 	klog.Infoln("waiting for instance status", "status", status)
-	return wait.PollImmediate(RetryInterval, RetryTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), RetryInterval, RetryTimeout, true, func(context.Context) (bool, error) {
 		attempt++
 
 		instance, err := c.GetInstance(context.Background(), id)
