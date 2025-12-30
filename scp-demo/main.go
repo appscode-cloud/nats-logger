@@ -179,7 +179,7 @@ func waitUntilScriptDone(scpClient *scp.Client) error {
 		Timeout:      30 * time.Second,
 		PreserveProp: true,
 	}
-	return wait.PollImmediate(RetryInterval, RetryTimeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), RetryInterval, RetryTimeout, true, func(ctx context.Context) (bool, error) {
 		attempt++
 		klog.Infoln("waiting for stacksript to finish", "attempt", attempt)
 
