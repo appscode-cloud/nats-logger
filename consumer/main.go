@@ -99,7 +99,8 @@ func setupLog(output string) (*rotatelogs.RotateLogs, error) {
 
 	log.Printf("Creating new log %q", output)
 
-	return rotatelogs.New(output,
+	return rotatelogs.New(
+		output,
 		rotatelogs.WithMaxAge(7*24*time.Hour),
 		rotatelogs.WithRotationTime(24*time.Hour),
 	)
